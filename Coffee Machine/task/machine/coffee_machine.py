@@ -6,7 +6,7 @@ class CoffeeMachine:
         self.milk = milk
         self.coffee_beans = coffee_beans
         self.disposable_cups = disposable_cups
-        self.exit_all = False
+        self.action = "main"
 
     def status(self):
         print(f'''The coffee machine has:
@@ -59,12 +59,8 @@ ${self.money} of money''')
                 enough_resource = True
         return enough_resource
 
-    def buy(self):
-        print("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu:")
-        coffee = input()
-        if coffee == "back":
-            self.action()
-        elif self.check_resource(coffee):
+    def buy(self, coffee):
+        if self.check_resource(coffee):
             if coffee == "1":
                 self.money += 4
                 self.water -= 250
@@ -86,55 +82,85 @@ ${self.money} of money''')
             else:
                 print("Invalid input!")
 
-    def fill(self):
-        print("Write how many ml of water you want to add:")
-        self.water += int(input())
-        print("Write how many ml of milk you want to add:")
-        self.milk += int(input())
-        print("Write how many grams of coffee beans you want to add:")
-        self.coffee_beans += int(input())
-        print("Write how many disposable coffee cups you want to add:")
-        self.disposable_cups += int(input())
+    def fill(self, water, milk, coffee_beans, disposable_cups):
+        self.water += water
+        self.milk += milk
+        self.coffee_beans += coffee_beans
+        self.disposable_cups += disposable_cups
 
     def take(self):
         print(f"I gave you ${self.money}")
         self.money = 0
 
+
+class Interface:
+    def __init__(self):
+        self.exit_all = False
+
     def exit(self):
         self.exit_all = True
 
-    def action(self):
-        while True:
+    def process_input(self, cm):
+        if cm.action == "main":
             print("Write action (buy, fill, take, remaining, exit):")
             action = input()
             if action == "buy":
-                print()
-                self.buy()
-                print()
+                cm.action = "buy"
+                self.process_input(cm)
 
             elif action == "fill":
-                print()
-                self.fill()
-                print()
+                cm.action = "fill"
+                self.process_input(cm)
 
             elif action == "take":
                 print()
-                self.take()
+                cm.take()
                 print()
 
             elif action == "remaining":
                 print()
-                self.status()
+                cm.status()
                 print()
 
             elif action == "exit":
                 self.exit()
             else:
                 print("Invalid input!")
-            if self.exit_all:
-                break
+
+        if cm.action == "buy":
+            print()
+            print("What do you want to buy? 1 - espresso, 2 - latte, 3 - cappuccino, back - to main menu:")
+            coffee = input()
+            if coffee == "back":
+                cm.action = "main"
+            elif coffee in ["1", "2", "3"]:
+                print()
+                cm.buy(coffee)
+                print()
+            else:
+                print("Invalid input!")
+            cm.action = "main"
+
+        if cm.action == "fill":
+            print()
+            print("Write how many ml of water you want to add:")
+            water = int(input())
+            print("Write how many ml of milk you want to add:")
+            milk = int(input())
+            print("Write how many grams of coffee beans you want to add:")
+            coffee_beans = int(input())
+            print("Write how many disposable coffee cups you want to add:")
+            disposable_cups = int(input())
+            cm.fill(water, milk, coffee_beans, disposable_cups)
+            cm.action = "main"
+            print()
 
 
 my_cfe_machine = CoffeeMachine(550, 400, 540, 120, 9)
-my_cfe_machine.action()
+my_interface = Interface()
+while True:
+    my_interface.process_input(my_cfe_machine)
+    if my_interface.exit_all:
+        break
+
 
